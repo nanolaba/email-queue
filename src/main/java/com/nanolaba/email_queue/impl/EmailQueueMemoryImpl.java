@@ -7,11 +7,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-/**
- * $Revision: 93 $
- * $Author: aandriishin $
- * $Date: 2012-08-10 14:03:18 +0400 (Пт, 10 авг 2012) $
- */
 public class EmailQueueMemoryImpl extends AbstractQueue {
 
     private List<EmailMessage> messages = new LinkedList<EmailMessage>();

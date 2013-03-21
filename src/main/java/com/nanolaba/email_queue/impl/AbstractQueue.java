@@ -1,16 +1,10 @@
 package com.nanolaba.email_queue.impl;
 
-import com.nanolaba.email_queue.Attachment;
-import com.nanolaba.email_queue.EmailMessage;
-import com.nanolaba.email_queue.EmailQueue;
-import com.nanolaba.email_queue.ErrorDescription;
+import com.nanolaba.email_queue.*;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
-import javax.mail.Message;
-import javax.mail.Multipart;
-import javax.mail.Session;
-import javax.mail.Transport;
+import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
@@ -47,14 +41,26 @@ public abstract class AbstractQueue implements EmailQueue {
             Session session = Session.getDefaultInstance(props, null);
             MimeMessage message = new MimeMessage(session);
             message.setFrom(new InternetAddress(senderEmail, senderName, DEFAULT_CHARSET));
+            for (EmailAddress emailAddress : emailMessage.getReceivers()) {
+                message.addRecipient(Message.RecipientType.TO,
+                        new InternetAddress(emailAddress.getEmail(),
+                                emailAddress.getName(), DEFAULT_CHARSET));
+            }
+            List<InternetAddress> replyTo = new LinkedList<InternetAddress>();
+            for (EmailAddress emailAddress : emailMessage.getReplyTo()) {
+                replyTo.add(new InternetAddress(emailAddress.getEmail(),
+                        emailAddress.getName(), DEFAULT_CHARSET));
+            }
 
-            message.addRecipient(Message.RecipientType.TO,
-                    new InternetAddress(emailMessage.getReceiverEmail(), emailMessage.getReceiverName(), DEFAULT_CHARSET));
+            if (!replyTo.isEmpty()) {
+                message.setReplyTo(replyTo.toArray(new Address[replyTo.size()]));
+            }
+
             message.setSubject(emailMessage.getTitle());
 
             MimeBodyPart messageBodyPart = new MimeBodyPart();
 
-            messageBodyPart.setText(emailMessage.getMessage(), "UTF-8", "html");
+            messageBodyPart.setText(emailMessage.getMessage(), DEFAULT_CHARSET, emailMessage.getMimeSubtype());
             Multipart multipart = new MimeMultipart();
             multipart.addBodyPart(messageBodyPart);
 

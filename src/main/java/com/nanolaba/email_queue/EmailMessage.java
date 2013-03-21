@@ -8,28 +8,28 @@ public class EmailMessage implements Serializable {
 
     private static final long serialVersionUID = 6000369195172777354L;
 
-    private String receiverEmail;
-    private String receiverName;
+    private List<EmailAddress> receivers = new LinkedList<EmailAddress>();
+    private List<EmailAddress> replyTo = new LinkedList<EmailAddress>();
     private String title;
     private String message;
     private String mimeSubtype = "plain";
 
     private List<Attachment> attachments = new LinkedList<Attachment>();
 
-    public String getReceiverName() {
-        return receiverName;
+    public List<EmailAddress> getReceivers() {
+        return receivers;
     }
 
-    public void setReceiverName(String receiverName) {
-        this.receiverName = receiverName;
+    public void setReceivers(List<EmailAddress> receivers) {
+        this.receivers = receivers;
     }
 
-    public String getReceiverEmail() {
-        return receiverEmail;
+    public List<EmailAddress> getReplyTo() {
+        return replyTo;
     }
 
-    public void setReceiverEmail(String receiverEmail) {
-        this.receiverEmail = receiverEmail;
+    public void setReplyTo(List<EmailAddress> replyTo) {
+        this.replyTo = replyTo;
     }
 
     public String getTitle() {

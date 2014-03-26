@@ -44,7 +44,8 @@ public abstract class AbstractQueue implements EmailQueue {
             for (EmailAddress emailAddress : emailMessage.getReceivers()) {
                 message.addRecipient(Message.RecipientType.TO,
                         new InternetAddress(emailAddress.getEmail(),
-                                emailAddress.getName(), DEFAULT_CHARSET));
+                                emailAddress.getName(), DEFAULT_CHARSET)
+                );
             }
             List<InternetAddress> replyTo = new LinkedList<InternetAddress>();
             for (EmailAddress emailAddress : emailMessage.getReplyTo()) {
@@ -98,6 +99,7 @@ public abstract class AbstractQueue implements EmailQueue {
         }
         props.setProperty("mail.smtp.port", String.valueOf(smtpPort));
         props.setProperty("mail.smtp.auth", String.valueOf(auth));
+        props.setProperty("mail.mime.charset", "utf-8");
         return props;
     }
 

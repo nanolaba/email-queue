@@ -4,7 +4,7 @@
     <groupId>com.nanolaba</groupId>
     <artifactId>email-queue</artifactId>
     <name>email-queue</name>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -63,7 +63,7 @@
             <plugin>
                 <groupId>com.github.github</groupId>
                 <artifactId>site-maven-plugin</artifactId>
-                <version>0.7</version>
+                <version>0.9</version>
                 <configuration>
                     <message>Maven artifacts for ${project.groupId} ${project.artifactId} ${project.version}</message>
                     <noJekyll>true</noJekyll>

@@ -24,9 +24,11 @@ public abstract class AbstractQueue implements EmailQueue {
     private String smtpPassword;
     private Integer smtpPort = 25;
     private Integer connectionTimeout = 30000;
+    private Integer writetimeout = 30000;
     private Integer timeout = 30000;
     private Boolean startTls = false;
     private Boolean auth = true;
+    private Boolean quitwait = true;
     private String charset = "UTF-8";
 
     private Properties defaultProperties = new Properties();
@@ -44,7 +46,7 @@ public abstract class AbstractQueue implements EmailQueue {
         try {
             Properties props = createConnectionProperties();
 
-            Session session = Session.getDefaultInstance(props, null);
+            Session session = Session.getInstance(props, null);
             MimeMessage message = new MimeMessage(session);
             message.setFrom(new InternetAddress(senderEmail, senderName, charset));
             for (EmailAddress emailAddress : emailMessage.getReceivers()) {
@@ -127,6 +129,12 @@ public abstract class AbstractQueue implements EmailQueue {
         }
         if (timeout != null) {
             props.setProperty("mail.smtp.timeout", String.valueOf(timeout));
+        }
+        if (writetimeout != null) {
+            props.setProperty("mail.smtp.writetimeout", String.valueOf(writetimeout));
+        }
+        if (quitwait != null) {
+            props.setProperty("mail.smtp.quitwait", String.valueOf(quitwait));
         }
         return props;
     }

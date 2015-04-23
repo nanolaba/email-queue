@@ -29,7 +29,7 @@ public abstract class AbstractQueue implements EmailQueue {
     private Boolean auth = true;
     private String charset = "UTF-8";
 
-    private Properties defaultProperties;
+    private Properties defaultProperties = new Properties();
 
     private int maxErrorQueueLength = 1000;
 
@@ -96,6 +96,11 @@ public abstract class AbstractQueue implements EmailQueue {
 
     protected Properties createConnectionProperties() {
         Properties props = getDefaultProperties();
+
+        if (props == null) {
+            props = new Properties();
+        }
+
         if (startTls != null) {
             props.setProperty("mail.smtp.starttls.enable", String.valueOf(startTls));
         }

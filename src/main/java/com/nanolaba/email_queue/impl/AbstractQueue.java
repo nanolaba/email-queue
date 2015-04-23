@@ -16,16 +16,22 @@ import java.util.Properties;
 
 public abstract class AbstractQueue implements EmailQueue {
 
-    protected static final String DEFAULT_CHARSET = "UTF-8";
 
     private String smtpHost;
     private String senderEmail;
     private String senderName;
     private String smtpLogin;
     private String smtpPassword;
-    private int smtpPort = 25;
-    private boolean startTls = false;
-    private boolean auth = true;
+    private Integer smtpPort = 25;
+    private Integer connectionTimeout = 30000;
+    private Integer timeout = 30000;
+    private Boolean startTls = false;
+    private Boolean auth = true;
+    private String charset = "UTF-8";
+
+    private Properties defaultProperties;
+
+    private int maxErrorQueueLength = 1000;
 
     private final List<ErrorDescription> errors = new LinkedList<ErrorDescription>();
 
@@ -40,17 +46,17 @@ public abstract class AbstractQueue implements EmailQueue {
 
             Session session = Session.getDefaultInstance(props, null);
             MimeMessage message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(senderEmail, senderName, DEFAULT_CHARSET));
+            message.setFrom(new InternetAddress(senderEmail, senderName, charset));
             for (EmailAddress emailAddress : emailMessage.getReceivers()) {
                 message.addRecipient(Message.RecipientType.TO,
                         new InternetAddress(emailAddress.getEmail(),
-                                emailAddress.getName(), DEFAULT_CHARSET)
+                                emailAddress.getName(), charset)
                 );
             }
             List<InternetAddress> replyTo = new LinkedList<InternetAddress>();
             for (EmailAddress emailAddress : emailMessage.getReplyTo()) {
                 replyTo.add(new InternetAddress(emailAddress.getEmail(),
-                        emailAddress.getName(), DEFAULT_CHARSET));
+                        emailAddress.getName(), charset));
             }
 
             if (!replyTo.isEmpty()) {
@@ -61,7 +67,7 @@ public abstract class AbstractQueue implements EmailQueue {
 
             MimeBodyPart messageBodyPart = new MimeBodyPart();
 
-            messageBodyPart.setText(emailMessage.getMessage(), DEFAULT_CHARSET, emailMessage.getMimeSubtype());
+            messageBodyPart.setText(emailMessage.getMessage(), charset, emailMessage.getMimeSubtype());
             Multipart multipart = new MimeMultipart();
             multipart.addBodyPart(messageBodyPart);
 
@@ -81,13 +87,18 @@ public abstract class AbstractQueue implements EmailQueue {
             transport.sendMessage(message, message.getAllRecipients());
             transport.close();
         } catch (Throwable t) {
+            if (errors.size() >= maxErrorQueueLength && !errors.isEmpty()) {
+                errors.remove(0);
+            }
             errors.add(new ErrorDescription(emailMessage, t));
         }
     }
 
     protected Properties createConnectionProperties() {
-        Properties props = new Properties();
-        props.setProperty("mail.smtp.starttls.enable", String.valueOf(startTls));
+        Properties props = getDefaultProperties();
+        if (startTls != null) {
+            props.setProperty("mail.smtp.starttls.enable", String.valueOf(startTls));
+        }
         if (smtpHost != null) {
             props.setProperty("mail.smtp.host", smtpHost);
         }
@@ -97,10 +108,38 @@ public abstract class AbstractQueue implements EmailQueue {
         if (smtpPassword != null) {
             props.setProperty("mail.smtp.password", smtpPassword);
         }
-        props.setProperty("mail.smtp.port", String.valueOf(smtpPort));
-        props.setProperty("mail.smtp.auth", String.valueOf(auth));
-        props.setProperty("mail.mime.charset", "utf-8");
+        if (smtpPort != null) {
+            props.setProperty("mail.smtp.port", String.valueOf(smtpPort));
+        }
+        if (auth != null) {
+            props.setProperty("mail.smtp.auth", String.valueOf(auth));
+        }
+        if (charset != null) {
+            props.setProperty("mail.mime.charset", charset);
+        }
+        if (connectionTimeout != null) {
+            props.setProperty("mail.smtp.connectiontimeout", String.valueOf(connectionTimeout));
+        }
+        if (timeout != null) {
+            props.setProperty("mail.smtp.timeout", String.valueOf(timeout));
+        }
         return props;
+    }
+
+    public Integer getConnectionTimeout() {
+        return connectionTimeout;
+    }
+
+    public void setConnectionTimeout(Integer connectionTimeout) {
+        this.connectionTimeout = connectionTimeout;
+    }
+
+    public Integer getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeout(Integer timeout) {
+        this.timeout = timeout;
     }
 
     public String getSmtpHost() {
@@ -119,20 +158,12 @@ public abstract class AbstractQueue implements EmailQueue {
         this.senderEmail = senderEmail;
     }
 
-    public String getSmtpPassword() {
-        return smtpPassword;
+    public String getSenderName() {
+        return senderName;
     }
 
-    public void setSmtpPassword(String smtpPassword) {
-        this.smtpPassword = smtpPassword;
-    }
-
-    public int getSmtpPort() {
-        return smtpPort;
-    }
-
-    public void setSmtpPort(int smtpPort) {
-        this.smtpPort = smtpPort;
+    public void setSenderName(String senderName) {
+        this.senderName = senderName;
     }
 
     public String getSmtpLogin() {
@@ -143,27 +174,59 @@ public abstract class AbstractQueue implements EmailQueue {
         this.smtpLogin = smtpLogin;
     }
 
-    public boolean isStartTls() {
+    public String getSmtpPassword() {
+        return smtpPassword;
+    }
+
+    public void setSmtpPassword(String smtpPassword) {
+        this.smtpPassword = smtpPassword;
+    }
+
+    public Integer getSmtpPort() {
+        return smtpPort;
+    }
+
+    public void setSmtpPort(Integer smtpPort) {
+        this.smtpPort = smtpPort;
+    }
+
+    public Boolean isStartTls() {
         return startTls;
     }
 
-    public void setStartTls(boolean startTls) {
+    public void setStartTls(Boolean startTls) {
         this.startTls = startTls;
     }
 
-    public String getSenderName() {
-        return senderName;
-    }
-
-    public void setSenderName(String senderName) {
-        this.senderName = senderName;
-    }
-
-    public boolean isAuth() {
+    public Boolean isAuth() {
         return auth;
     }
 
-    public void setAuth(boolean auth) {
+    public void setAuth(Boolean auth) {
         this.auth = auth;
+    }
+
+    public String getCharset() {
+        return charset;
+    }
+
+    public void setCharset(String charset) {
+        this.charset = charset;
+    }
+
+    public Properties getDefaultProperties() {
+        return defaultProperties;
+    }
+
+    public void setDefaultProperties(Properties defaultProperties) {
+        this.defaultProperties = defaultProperties;
+    }
+
+    public int getMaxErrorQueueLength() {
+        return maxErrorQueueLength;
+    }
+
+    public void setMaxErrorQueueLength(int maxErrorQueueLength) {
+        this.maxErrorQueueLength = maxErrorQueueLength;
     }
 }

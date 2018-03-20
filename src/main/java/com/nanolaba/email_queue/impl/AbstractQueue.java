@@ -4,7 +4,10 @@ import com.nanolaba.email_queue.*;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
-import javax.mail.*;
+import javax.mail.Address;
+import javax.mail.Multipart;
+import javax.mail.Session;
+import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
@@ -50,7 +53,7 @@ public abstract class AbstractQueue implements EmailQueue {
             MimeMessage message = new MimeMessage(session);
             message.setFrom(new InternetAddress(senderEmail, senderName, charset));
             for (EmailAddress emailAddress : emailMessage.getReceivers()) {
-                message.addRecipient(Message.RecipientType.TO,
+                message.addRecipient(emailAddress.getType(),
                         new InternetAddress(emailAddress.getEmail(),
                                 emailAddress.getName(), charset)
                 );
